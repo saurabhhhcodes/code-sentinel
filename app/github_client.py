@@ -12,12 +12,14 @@ GITHUB_API = "https://api.github.com"
 
 
 def _headers() -> dict:
-    token = os.environ["GITHUB_TOKEN"]
-    return {
-        "Authorization": f"Bearer {token}",
+    token = os.environ.get("GITHUB_TOKEN", "")
+    h = {
         "Accept": "application/vnd.github.v3+json",
         "X-GitHub-Api-Version": "2022-11-28",
     }
+    if token:
+        h["Authorization"] = f"Bearer {token}"
+    return h
 
 
 async def get_pr_diff(repo_full_name: str, pr_number: int) -> str:
@@ -86,6 +88,10 @@ async def post_review(
         }
         for c in result.inline_comments
     ]
+
+    if not os.environ.get("GITHUB_TOKEN"):
+        logger.info("No GITHUB_TOKEN set. Skipping remote GitHub review post for %s#%d (demo mode)", repo_full_name, pr_number)
+        return
 
     url = f"{GITHUB_API}/repos/{repo_full_name}/pulls/{pr_number}/reviews"
     payload = {
