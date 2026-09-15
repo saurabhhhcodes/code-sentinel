@@ -51,7 +51,7 @@ Cloud Run (FastAPI webhook server)
 ```bash
 # Install gcloud CLI and authenticate
 gcloud auth login
-gcloud config set project YOUR_PROJECT_ID
+gcloud config set project gen-lang-client-0531791614
 
 # Enable required APIs
 gcloud services enable \
@@ -90,8 +90,7 @@ gcloud artifacts repositories create code-reviewer \
 ### 5. Deploy via Cloud Build
 
 ```bash
-gcloud builds submit --config cloudbuild.yaml \
-  --substitutions=PROJECT_ID=$(gcloud config get-value project)
+gcloud builds submit --config cloudbuild.yaml
 ```
 
 ### 6. Configure GitHub Webhook
