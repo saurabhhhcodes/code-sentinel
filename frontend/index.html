@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CodeSentinel — 24/7 Intelligent Code Reviewer</title>
+  <meta name="description" content="AI-powered automated code reviewer built with Gemini on Google Cloud. Instant PR reviews, quality scoring, and historical learning." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg:        #080c14;
+      --surface:   #0e1421;
+      --surface2:  #141c2e;
+      --border:    rgba(99,210,255,0.10);
+      --accent:    #4f9fff;
+      --accent2:   #63d2ff;
+      --green:     #22d3a5;
+      --yellow:    #f5c842;
+      --orange:    #ff8c42;
+      --red:       #ff4f6a;
+      --text:      #e2eaf4;
+      --muted:     #6b7fa3;
+      --glow:      rgba(79,159,255,0.18);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── Background grid ──────────────────────── */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background:
+        linear-gradient(rgba(79,159,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(79,159,255,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+    }
+
+    /* ── Navbar ───────────────────────────────── */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 2rem;
+      height: 60px;
+      background: rgba(8,12,20,0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+    }
+    .logo {
+      display: flex; align-items: center; gap: 0.6rem;
+      font-weight: 700; font-size: 1.05rem; letter-spacing: -0.02em;
+    }
+    .logo-icon {
+      width: 28px; height: 28px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border-radius: 7px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.9rem;
+    }
+    .nav-badge {
+      background: rgba(34,211,165,0.15);
+      color: var(--green);
+      border: 1px solid rgba(34,211,165,0.3);
+      font-size: 0.65rem; font-weight: 600; letter-spacing: 0.08em;
+      padding: 2px 8px; border-radius: 20px;
+    }
+    .nav-right { display: flex; align-items: center; gap: 1rem; }
+    .pulse-dot {
+      width: 8px; height: 8px;
+      background: var(--green);
+      border-radius: 50%;
+      animation: pulse 2s ease-in-out infinite;
+    }
+    .status-text { font-size: 0.75rem; color: var(--green); font-weight: 500; }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 0 0 rgba(34,211,165,0.4); }
+      50% { opacity: 0.8; transform: scale(1.1); box-shadow: 0 0 0 6px rgba(34,211,165,0); }
+    }
+
+    /* ── Hero ─────────────────────────────────── */
+    .hero {
+      text-align: center;
+      padding: 5rem 2rem 3rem;
+      position: relative;
+    }
+    .hero-glow {
+      position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+      width: 600px; height: 300px;
+      background: radial-gradient(ellipse, rgba(79,159,255,0.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-tag {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      background: rgba(79,159,255,0.08);
+      border: 1px solid rgba(79,159,255,0.2);
+      color: var(--accent2);
+      font-size: 0.72rem; font-weight: 600; letter-spacing: 0.1em;
+      padding: 4px 12px; border-radius: 20px;
+      margin-bottom: 1.2rem;
+      text-transform: uppercase;
+    }
+    .hero h1 {
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      line-height: 1.15;
+      background: linear-gradient(135deg, #fff 0%, var(--accent2) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 1rem;
+    }
+    .hero p {
+      font-size: 1.05rem;
+      color: var(--muted);
+      max-width: 540px;
+      margin: 0 auto 2.5rem;
+      line-height: 1.7;
+    }
+
+    /* ── Stats bar ────────────────────────────── */
+    .stats-bar {
+      display: flex; justify-content: center; gap: 2rem;
+      flex-wrap: wrap;
+      margin-bottom: 3rem;
+    }
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1rem 1.6rem;
+      text-align: center;
+      min-width: 120px;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+    .stat-card:hover {
+      border-color: rgba(79,159,255,0.3);
+      transform: translateY(-2px);
+    }
+    .stat-value {
+      font-size: 1.8rem; font-weight: 800;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .stat-label { font-size: 0.72rem; color: var(--muted); margin-top: 2px; letter-spacing: 0.05em; }
+
+    /* ── Main layout ──────────────────────────── */
+    .container { max-width: 1200px; margin: 0 auto; padding: 0 1.5rem; }
+
+    .section-title {
+      font-size: 0.7rem; font-weight: 700; letter-spacing: 0.12em;
+      color: var(--muted); text-transform: uppercase;
+      margin-bottom: 1rem;
+    }
+
+    /* ── Reviews grid ─────────────────────────── */
+    .reviews-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 1rem;
+      margin-bottom: 3rem;
+    }
+
+    .review-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.4rem;
+      transition: all 0.25s ease;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+    .review-card::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      opacity: 0;
+      transition: opacity 0.25s;
+    }
+    .review-card:hover {
+      border-color: rgba(79,159,255,0.3);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3), 0 0 0 1px rgba(79,159,255,0.1);
+    }
+    .review-card:hover::before { opacity: 1; }
+
+    .card-header {
+      display: flex; align-items: flex-start; justify-content: space-between;
+      margin-bottom: 1rem;
+    }
+    .pr-info {}
+    .pr-repo { font-size: 0.72rem; color: var(--muted); margin-bottom: 2px; }
+    .pr-title { font-size: 0.9rem; font-weight: 600; }
+
+    .score-badge {
+      display: flex; flex-direction: column; align-items: center;
+      min-width: 52px;
+    }
+    .score-num {
+      font-size: 1.4rem; font-weight: 800; line-height: 1;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .score-grade { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.05em; }
+
+    .score-high  { color: var(--green); }
+    .score-mid   { color: var(--yellow); }
+    .score-low   { color: var(--orange); }
+    .score-bad   { color: var(--red); }
+
+    .score-bars {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
+      margin-bottom: 1rem;
+    }
+    .score-bar-item { }
+    .bar-label { font-size: 0.65rem; color: var(--muted); margin-bottom: 3px; display: flex; justify-content: space-between; }
+    .bar-track {
+      height: 4px; background: rgba(255,255,255,0.06); border-radius: 2px; overflow: hidden;
+    }
+    .bar-fill {
+      height: 100%; border-radius: 2px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      transition: width 0.8s cubic-bezier(0.16,1,0.3,1);
+    }
+
+    .card-summary {
+      font-size: 0.8rem; color: var(--muted); line-height: 1.6;
+      margin-bottom: 0.8rem;
+    }
+
+    .card-footer {
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .lang-tag {
+      background: rgba(79,159,255,0.1);
+      color: var(--accent2);
+      border: 1px solid rgba(79,159,255,0.2);
+      font-size: 0.65rem; font-weight: 600;
+      padding: 2px 8px; border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .comment-count { font-size: 0.7rem; color: var(--muted); }
+
+    .time-ago { font-size: 0.68rem; color: var(--muted); }
+
+    /* ── Architecture section ─────────────────── */
+    .arch-section { margin-bottom: 3rem; }
+    .arch-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 0.8rem;
+    }
+    .arch-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.2rem;
+      transition: all 0.2s;
+    }
+    .arch-card:hover {
+      border-color: rgba(79,159,255,0.25);
+      transform: translateY(-2px);
+    }
+    .arch-icon { font-size: 1.4rem; margin-bottom: 0.5rem; }
+    .arch-name { font-size: 0.8rem; font-weight: 600; margin-bottom: 0.2rem; }
+    .arch-role { font-size: 0.7rem; color: var(--muted); line-height: 1.4; }
+
+    /* ── Empty state ──────────────────────────── */
+    .empty-state {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 4rem 2rem;
+      color: var(--muted);
+    }
+    .empty-icon { font-size: 3rem; margin-bottom: 1rem; opacity: 0.5; }
+    .empty-state h3 { font-size: 1.1rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--text); }
+    .empty-state p { font-size: 0.85rem; }
+
+    /* ── Loading skeleton ─────────────────────── */
+    .skeleton {
+      background: linear-gradient(90deg, var(--surface) 25%, var(--surface2) 50%, var(--surface) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+      border-radius: 6px;
+    }
+    @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+    /* ── Footer ───────────────────────────────── */
+    footer {
+      text-align: center;
+      padding: 2rem;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 0.75rem;
+    }
+    footer strong { color: var(--accent2); }
+
+    /* ── Animations ───────────────────────────── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .fade-up { animation: fadeUp 0.5s ease both; }
+    .delay-1 { animation-delay: 0.1s; }
+    .delay-2 { animation-delay: 0.2s; }
+    .delay-3 { animation-delay: 0.3s; }
+
+    /* ── Flow diagram ─────────────────────────── */
+    .flow {
+      display: flex; align-items: center; flex-wrap: wrap;
+      gap: 0; margin-bottom: 3rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.5rem 2rem;
+      overflow-x: auto;
+    }
+    .flow-step {
+      display: flex; flex-direction: column; align-items: center; gap: 6px;
+      min-width: 90px; text-align: center;
+    }
+    .flow-icon {
+      width: 44px; height: 44px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.2rem;
+      transition: border-color 0.2s;
+    }
+    .flow-step:hover .flow-icon { border-color: var(--accent); }
+    .flow-label { font-size: 0.65rem; color: var(--muted); font-weight: 500; }
+    .flow-arrow {
+      font-size: 1rem; color: var(--border);
+      padding: 0 0.4rem; padding-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">
+    <div class="logo-icon">🤖</div>
+    <span>CodeSentinel</span>
+    <span class="nav-badge">LIVE</span>
+  </div>
+  <div class="nav-right">
+    <div class="pulse-dot"></div>
+    <span class="status-text">24/7 Active</span>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-glow"></div>
+  <div class="hero-tag">⚡ Powered by Gemini 1.5 Pro · Vertex AI</div>
+  <h1>24/7 Intelligent<br>Code Reviewer</h1>
+  <p>Automated, always-on AI code reviews — instant feedback on every pull request with quality scoring and historical learning.</p>
+  <div class="stats-bar" id="stats-bar">
+    <div class="stat-card fade-up delay-1">
+      <div class="stat-value" id="stat-total">—</div>
+      <div class="stat-label">TOTAL REVIEWS</div>
+    </div>
+    <div class="stat-card fade-up delay-2">
+      <div class="stat-value" id="stat-avg">—</div>
+      <div class="stat-label">AVG SCORE</div>
+    </div>
+    <div class="stat-card fade-up delay-3">
+      <div class="stat-value" id="stat-langs">—</div>
+      <div class="stat-label">LANGUAGES</div>
+    </div>
+    <div class="stat-card fade-up delay-3">
+      <div class="stat-value" id="stat-comments">—</div>
+      <div class="stat-label">INLINE COMMENTS</div>
+    </div>
+  </div>
+</section>
+
+<div class="container">
+
+  <!-- Architecture flow -->
+  <div class="arch-section fade-up">
+    <div class="section-title">Architecture — GCP Stack</div>
+    <div class="flow">
+      <div class="flow-step">
+        <div class="flow-icon">🐙</div>
+        <div class="flow-label">GitHub PR</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="flow-icon">🔗</div>
+        <div class="flow-label">Webhook</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="flow-icon">☁️</div>
+        <div class="flow-label">Cloud Run</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="flow-icon">🧠</div>
+        <div class="flow-label">Gemini 1.5 Pro</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="flow-icon">🗄️</div>
+        <div class="flow-label">Firestore</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="flow-icon">💬</div>
+        <div class="flow-label">PR Comment</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- GCP services -->
+  <div class="arch-section fade-up">
+    <div class="section-title">GCP Services</div>
+    <div class="arch-grid">
+      <div class="arch-card">
+        <div class="arch-icon">☁️</div>
+        <div class="arch-name">Cloud Run</div>
+        <div class="arch-role">Always-on FastAPI webhook server. Auto-scales to zero.</div>
+      </div>
+      <div class="arch-card">
+        <div class="arch-icon">🧠</div>
+        <div class="arch-name">Vertex AI</div>
+        <div class="arch-role">Gemini 1.5 Pro for multi-language code review intelligence.</div>
+      </div>
+      <div class="arch-card">
+        <div class="arch-icon">🗄️</div>
+        <div class="arch-name">Firestore</div>
+        <div class="arch-role">Historical review storage & contextual learning database.</div>
+      </div>
+      <div class="arch-card">
+        <div class="arch-icon">🔐</div>
+        <div class="arch-name">Secret Manager</div>
+        <div class="arch-role">Securely stores GitHub tokens and webhook secrets.</div>
+      </div>
+      <div class="arch-card">
+        <div class="arch-icon">📦</div>
+        <div class="arch-name">Artifact Registry</div>
+        <div class="arch-role">Docker image storage for Cloud Run deployments.</div>
+      </div>
+      <div class="arch-card">
+        <div class="arch-icon">🔧</div>
+        <div class="arch-name">Cloud Build</div>
+        <div class="arch-role">CI/CD pipeline for automated build and deployment.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Review feed -->
+  <div class="section-title">Live Review Feed</div>
+  <div class="reviews-grid" id="reviews-grid">
+    <!-- Loading skeletons -->
+    <div class="review-card">
+      <div style="height:14px;width:60%;margin-bottom:8px;" class="skeleton"></div>
+      <div style="height:10px;width:40%;" class="skeleton"></div>
+    </div>
+    <div class="review-card">
+      <div style="height:14px;width:55%;margin-bottom:8px;" class="skeleton"></div>
+      <div style="height:10px;width:35%;" class="skeleton"></div>
+    </div>
+    <div class="review-card">
+      <div style="height:14px;width:65%;margin-bottom:8px;" class="skeleton"></div>
+      <div style="height:10px;width:45%;" class="skeleton"></div>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  Built with ❤️ for <strong>Code Kitchen</strong> · Powered by <strong>Gemini on Vertex AI</strong> · © 2026
+</footer>
+
+<script>
+  // ── Score color helper ──────────────────────────────────────────
+  function scoreClass(n) {
+    if (n >= 85) return 'score-high';
+    if (n >= 70) return 'score-mid';
+    if (n >= 50) return 'score-low';
+    return 'score-bad';
+  }
+
+  function timeAgo(isoStr) {
+    if (!isoStr) return 'just now';
+    const diff = Date.now() - new Date(isoStr).getTime();
+    const m = Math.floor(diff / 60000);
+    if (m < 1) return 'just now';
+    if (m < 60) return `${m}m ago`;
+    const h = Math.floor(m / 60);
+    if (h < 24) return `${h}h ago`;
+    return `${Math.floor(h / 24)}d ago`;
+  }
+
+  // ── Render a single review card ─────────────────────────────────
+  function renderCard(r) {
+    const score = r.total_score ?? 0;
+    const cls = scoreClass(score);
+    const sc = r.score ?? {};
+    const comments = (r.inline_comments ?? []).length;
+    const bars = [
+      { label: 'Correctness', val: sc.correctness ?? 0 },
+      { label: 'Security',    val: sc.security ?? 0 },
+      { label: 'Performance', val: sc.performance ?? 0 },
+      { label: 'Style',       val: sc.style ?? 0 },
+    ];
+
+    return `
+      <div class="review-card fade-up" id="card-${r.id ?? Math.random()}">
+        <div class="card-header">
+          <div class="pr-info">
+            <div class="pr-repo">${r.repo_full_name ?? 'unknown/repo'}</div>
+            <div class="pr-title">PR #${r.pr_number ?? '?'}</div>
+          </div>
+          <div class="score-badge">
+            <div class="score-num ${cls}">${score}</div>
+            <div class="score-grade ${cls}">${r.grade ?? '—'}</div>
+          </div>
+        </div>
+        <div class="score-bars">
+          ${bars.map(b => `
+            <div class="score-bar-item">
+              <div class="bar-label">
+                <span>${b.label}</span><span>${b.val}/25</span>
+              </div>
+              <div class="bar-track">
+                <div class="bar-fill" style="width:${(b.val/25)*100}%"></div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+        <div class="card-summary">${(r.summary ?? 'No summary available.').slice(0, 160)}${(r.summary ?? '').length > 160 ? '…' : ''}</div>
+        <div class="card-footer">
+          <span class="lang-tag">${r.language_detected ?? 'Unknown'}</span>
+          <span class="comment-count">💬 ${comments} comment${comments !== 1 ? 's' : ''}</span>
+          <span class="time-ago">${timeAgo(r.reviewed_at)}</span>
+        </div>
+      </div>
+    `;
+  }
+
+  // ── Load reviews from API ───────────────────────────────────────
+  async function loadReviews() {
+    const grid = document.getElementById('reviews-grid');
+    try {
+      const res = await fetch('/api/reviews?limit=20');
+      const data = await res.json();
+      const reviews = data.reviews ?? [];
+
+      if (reviews.length === 0) {
+        grid.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-icon">🤖</div>
+            <h3>No reviews yet</h3>
+            <p>Open a pull request in a repository with the webhook configured to trigger a review.</p>
+          </div>`;
+        return;
+      }
+
+      grid.innerHTML = reviews.map(renderCard).join('');
+
+      // Update stats
+      const total = reviews.length;
+      const avg = Math.round(reviews.reduce((s, r) => s + (r.total_score ?? 0), 0) / total);
+      const langs = new Set(reviews.map(r => r.language_detected).filter(Boolean)).size;
+      const comments = reviews.reduce((s, r) => s + (r.inline_comments ?? []).length, 0);
+
+      document.getElementById('stat-total').textContent = total;
+      document.getElementById('stat-avg').textContent = avg + '/100';
+      document.getElementById('stat-langs').textContent = langs;
+      document.getElementById('stat-comments').textContent = comments;
+
+    } catch (e) {
+      grid.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-icon">⚠️</div>
+          <h3>Dashboard offline</h3>
+          <p>Could not reach the API. Make sure the Cloud Run service is running.</p>
+        </div>`;
+    }
+  }
+
+  // Load immediately and refresh every 30s
+  loadReviews();
+  setInterval(loadReviews, 30000);
+</script>
+</body>
+</html>
