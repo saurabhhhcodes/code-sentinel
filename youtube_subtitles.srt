@@ -1,0 +1,51 @@
+1
+00:00:00,500 --> 00:00:06,200
+Hi everyone, I’m Saurabh. Code reviews are one of the biggest bottlenecks in modern engineering teams.
+
+2
+00:00:06,500 --> 00:00:13,800
+Senior developers spend countless hours reviewing pull requests, while critical bugs, security vulnerabilities, and anti-patterns still slip through to production.
+
+3
+00:00:14,200 --> 00:00:19,600
+To solve this, I built CodeSentinel — an automated, 24/7 intelligent code reviewer powered by Google Cloud.
+
+4
+00:00:20,000 --> 00:00:26,500
+The moment a developer opens a pull request, GitHub webhooks trigger our serverless Cloud Run backend.
+
+5
+00:00:27,000 --> 00:00:35,500
+It fetches the diff, injects historical context from Google Cloud Firestore, and calls Gemini 1.5 Pro on Vertex AI to perform deep, multi-language code analysis.
+
+6
+00:00:36,000 --> 00:00:43,800
+Unlike basic linters or chat interfaces, CodeSentinel provides an objective 100-point quality score across Correctness, Security, Performance, and Style.
+
+7
+00:00:44,200 --> 00:00:50,000
+Even better, it possesses historical learning: it stores every review in Firestore, learning team patterns so future reviews get progressively smarter.
+
+8
+00:00:50,500 --> 00:00:54,800
+[Ambient Music Playing] CodeSentinel 24/7 Live Monitoring & Aggregate Statistics Dashboard.
+
+9
+00:00:55,000 --> 00:01:08,000
+[Architecture Flow] GitHub PR Webhook -> Google Cloud Run -> Vertex AI Gemini 1.5 Pro -> Cloud Firestore -> Automated PR Review Comments.
+
+10
+00:01:08,500 --> 00:01:23,000
+[Live Review Inspection] Pull Request #42 scored 88/100 (Grade A) with multi-dimensional category benchmarks and critical security alerts.
+
+11
+00:01:23,500 --> 00:01:36,000
+[Automated Vulnerability Detection] Flagging SQL parameter interpolation risk on Line 65 with inline remediation suggestions.
+
+12
+00:01:36,500 --> 00:01:48,000
+[Multi-Language Support] Native code reviews across Python, Go, and TypeScript with Firestore historical learning memory.
+
+13
+00:01:48,500 --> 00:01:51,600
+[Open Source Repository] GitHub: https://github.com/saurabhhhcodes/code-sentinel. Built for Code Kitchen Season 01.

@@ -560,7 +560,13 @@
   async function loadReviews() {
     const grid = document.getElementById('reviews-grid');
     try {
-      const res = await fetch('/api/reviews?limit=20');
+      let res;
+      try {
+        res = await fetch('/api/reviews?limit=20');
+        if (!res.ok) throw new Error();
+      } catch (err) {
+        res = await fetch('/api/reviews.json');
+      }
       const data = await res.json();
       const reviews = data.reviews ?? [];
 
