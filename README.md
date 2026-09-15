@@ -3,6 +3,24 @@
 > A production-grade, AI-powered code reviewer built entirely on **Google Cloud Platform**.  
 > Automatically reviews every Pull Request using **Gemini 1.5 Pro on Vertex AI**, posts inline comments with quality scores, and learns from historical reviews stored in **Firestore**.
 
+[![Live Deployment](https://img.shields.io/badge/Live%20Demo-Netlify-00ad9f?style=for-the-badge&logo=netlify&logoColor=white)](https://delicate-faun-0d1de1.netlify.app)
+[![GitHub](https://img.shields.io/badge/GitHub-Repository-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/saurabhhhcodes/code-sentinel)
+[![GCP Native](https://img.shields.io/badge/Google%20Cloud-Platform-4285F4?style=for-the-badge&logo=googlecloud&logoColor=white)](https://cloud.google.com)
+
+---
+
+## 🌐 Live Demo & Video Walkthrough
+
+- 🔗 **Live Application URL:** [https://delicate-faun-0d1de1.netlify.app](https://delicate-faun-0d1de1.netlify.app)
+- 🎥 **Video Walkthrough (MP4 in Repository):** [`final_audition_video.mp4`](./final_audition_video.mp4)
+- 📺 **YouTube Audition Video:** [Watch CodeSentinel on YouTube](https://youtube.com) *(Update with your direct YouTube link)*
+- 💬 **Subtitles / Closed Captions:** [`youtube_subtitles.srt`](./youtube_subtitles.srt)
+
+### 🎬 Video Preview
+https://github.com/user-attachments/assets/final_audition_video.mp4
+
+> You can download and watch the full 1080p walkthrough video directly at [`final_audition_video.mp4`](./final_audition_video.mp4).
+
 ---
 
 ## Features
